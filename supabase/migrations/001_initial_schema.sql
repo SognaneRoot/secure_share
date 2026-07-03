@@ -188,11 +188,9 @@ create policy "Service role can manage storage"
   using (bucket_id = 'encrypted-files')
   with check (bucket_id = 'encrypted-files');
 
--- ─── Auto-cleanup via pg_cron (optional) ─────────────────────
--- Requires pg_cron extension enabled in Supabase dashboard
-
--- select cron.schedule(
---   'cleanup-expired-files',
---   '0 * * * *', -- every hour
---   $$ select public.cleanup_expired_files(); $$
--- );
+-- ─── pg_cron : cleanup automatique toutes les heures ─────────
+select cron.schedule(
+  'secure-share-cleanup',
+  '0 * * * *',
+  $$ select public.cleanup_expired_files(); $$
+);

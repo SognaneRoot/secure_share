@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
       success: true,
       deletedCount,
       timestamp: new Date().toISOString(),
+      note: 'Automatic cleanup is handled by pg_cron in Supabase every hour.',
     })
   } catch (err) {
     console.error('Cleanup route error:', err)

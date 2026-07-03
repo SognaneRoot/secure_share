@@ -7,11 +7,5 @@
     "app/api/**": {
       "maxDuration": 60
     }
-  },
-  "crons": [
-    {
-      "path": "/api/cleanup",
-      "schedule": "0 * * * *"
-    }
-  ]
+  }
 }

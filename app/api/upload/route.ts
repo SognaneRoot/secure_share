@@ -109,8 +109,7 @@ export async function POST(request: NextRequest) {
       .upload(storagePath, fileBuffer, {
         contentType: 'application/octet-stream',
         upsert: false,
-        duplex: 'half',
-      } as Parameters<typeof supabase.storage.from>['0'] extends never ? never : { contentType: string; upsert: boolean })
+      })
 
     if (storageError) {
       console.error('Storage upload error:', storageError)

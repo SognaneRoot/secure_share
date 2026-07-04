@@ -1,7 +1,7 @@
 import { createServiceClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
 
-const WINDOW_MS = parseInt(process.env.RATE_LIMIT_WINDOW_MS ?? '3600000') // 1 hour
+const WINDOW_MS = parseInt(process.env.RATE_LIMIT_WINDOW_MS ?? '3600000')
 const MAX_UPLOADS = parseInt(process.env.RATE_LIMIT_MAX_UPLOADS ?? '10')
 
 export async function getClientIp(req: NextRequest): Promise<string> {
@@ -17,25 +17,21 @@ export async function checkRateLimit(ip: string): Promise<{ allowed: boolean; re
     const supabase = await createServiceClient()
     const windowStart = new Date(Date.now() - WINDOW_MS).toISOString()
 
-    const { count } = await supabase
+    const { data, error } = await supabase
       .from('rate_limits')
-      .select('*', { count: 'exact', head: true })
+      .select('id')
       .eq('ip', ip)
       .gte('created_at', windowStart)
 
-    const used = count ?? 0
-    const remaining = Math.max(0, MAX_UPLOADS - used)
+    if (error) return { allowed: true, remaining: MAX_UPLOADS }
 
-    if (used >= MAX_UPLOADS) {
-      return { allowed: false, remaining: 0 }
-    }
+    const used = data?.length ?? 0
+    if (used >= MAX_UPLOADS) return { allowed: false, remaining: 0 }
 
-    // Record this request
-    await supabase.from('rate_limits').insert({ ip, created_at: new Date().toISOString() })
+    await supabase.from('rate_limits').insert({ ip })
 
-    return { allowed: true, remaining: remaining - 1 }
+    return { allowed: true, remaining: MAX_UPLOADS - used - 1 }
   } catch {
-    // If rate limit check fails, allow the request
     return { allowed: true, remaining: MAX_UPLOADS }
   }
 }
